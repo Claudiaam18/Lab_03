@@ -28,6 +28,10 @@ public class E01TopKFrequentElements {
             result.addAll(buckets[i]);
         }
 
+        if (result.size() < k) {
+            throw new IllegalArgumentException("k es demasiado grande, hay menos elementos únicos disponibles");
+        }
+
         int[] topK = new int[k];
         for (int i = 0; i < k; i++) {
             topK[i] = result.get(i);
