@@ -12,6 +12,7 @@ public class E01TopKFrequentElements {
             frequencyMap.put(num, frequencyMap.getOrDefault(num, 0) + 1);
         }
 
+        // Paso 2: Crear buckets donde índice representa la frecuencia
         List<Integer>[] buckets = new List[nums.length + 1];
         for (int i = 0; i <= nums.length; i++) {
             buckets[i] = new ArrayList<>();

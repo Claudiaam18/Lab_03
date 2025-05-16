@@ -4,43 +4,81 @@ import java.util.*;
 
 public class E02AutocompleteSystem {
 
-    private final Map<String, Integer> freq = new HashMap<>();
+    private final TrieNode root = new TrieNode();
     private final StringBuilder current = new StringBuilder();
 
     public E02AutocompleteSystem(String[] sentences, int[] times) {
         for (int i = 0; i < sentences.length; i++) {
-            freq.put(sentences[i], times[i]);
+            insert(sentences[i], times[i]);
         }
     }
 
     public List<String> input(char c) {
         if (c == '#') {
             String sentence = current.toString();
-            freq.put(sentence, freq.getOrDefault(sentence, 0) + 1);
+            insert(sentence, 1);
             current.setLength(0);
             return Collections.emptyList();
         }
 
         current.append(c);
-        String prefix = current.toString();
+        return search(current.toString());
+    }
 
-        PriorityQueue<String> pq = new PriorityQueue<>(3, (a, b) -> {
-            int fa = freq.get(a);
-            int fb = freq.get(b);
-            if (fa != fb) return fb - fa;
-            return a.compareTo(b);
-        });
+    private void insert(String sentence, int count) {
+        TrieNode node = root;
+        for (char ch : sentence.toCharArray()) {
+            node.children.putIfAbsent(ch, new TrieNode());
+            node = node.children.get(ch);
+        }
+        node.freq.put(sentence, node.freq.getOrDefault(sentence, 0) + count);
+    }
 
-        for (String s : freq.keySet()) {
-            if (s.startsWith(prefix)) {
-                pq.offer(s);
-                if (pq.size() > 3) pq.poll();
+    private List<String> search(String prefix) {
+        TrieNode node = root;
+        for (char ch : prefix.toCharArray()) {
+            if (!node.children.containsKey(ch)) {
+                return Collections.emptyList();
             }
+            node = node.children.get(ch);
         }
 
-        List<String> res = new ArrayList<>();
-        while (!pq.isEmpty()) res.add(pq.poll());
-        Collections.reverse(res);
+        // Obtener todas las oraciones con sus frecuencias siguiendo desde este nodo
+        Map<String, Integer> sentencesMap = new HashMap<>();
+        collectSentences(node, sentencesMap);
+
+        // Ordenar oraciones por frecuencia descendente y lexicografía ascendente
+        PriorityQueue<Map.Entry<String, Integer>> pq = new PriorityQueue<>(
+                (a, b) -> {
+                    if (!a.getValue().equals(b.getValue())) {
+                        return b.getValue() - a.getValue();
+                    }
+                    return a.getKey().compareTo(b.getKey());
+                }
+        );
+
+        pq.addAll(sentencesMap.entrySet());
+
+        List<String> res = new ArrayList<>(3);
+        for (int i = 0; i < 3 && !pq.isEmpty(); i++) {
+            res.add(pq.poll().getKey());
+        }
+
         return res;
     }
+
+    private void collectSentences(TrieNode node, Map<String, Integer> sentencesMap) {
+        for (Map.Entry<String, Integer> entry : node.freq.entrySet()) {
+            sentencesMap.put(entry.getKey(), entry.getValue());
+        }
+        for (TrieNode child : node.children.values()) {
+            collectSentences(child, sentencesMap);
+        }
+    }
+
+    private static class TrieNode {
+        Map<Character, TrieNode> children = new HashMap<>();
+        Map<String, Integer> freq = new HashMap<>();
+    }
 }
+
