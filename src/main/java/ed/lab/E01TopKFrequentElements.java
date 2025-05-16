@@ -7,13 +7,13 @@ import java.util.Map;
 
 public class E01TopKFrequentElements {
     public int[] topKFrequent(int[] nums, int k) {
-        Map<Integer, Integer> frequencyMap = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> frequencyMap = new HashMap<>();
         for (int num : nums) {
             frequencyMap.put(num, frequencyMap.getOrDefault(num, 0) + 1);
         }
 
         List<Integer>[] buckets = new List[nums.length + 1];
-        for(int i = 0; i <= nums.length; i++){
+        for (int i = 0; i <= nums.length; i++) {
             buckets[i] = new ArrayList<>();
         }
 
@@ -24,7 +24,7 @@ public class E01TopKFrequentElements {
         }
 
         List<Integer> result = new ArrayList<>();
-        for (int i = buckets.length -1; i >= 0 && result.size() < k; i--) {
+        for (int i = buckets.length - 1; i >= 0 && result.size() < k; i--) {
             result.addAll(buckets[i]);
         }
 
